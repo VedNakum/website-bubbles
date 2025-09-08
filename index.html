@@ -100,170 +100,186 @@
 
   <!-- Supabase SDK -->
   <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
-    // Using your project details (⚠️ this is your anon public key, safe for frontend use)
-    const SUPABASE_URL = "https://ednokgrknummhlcdunzl.supabase.co"
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbm9rZ3JrbnVtbWhsY2R1bnpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyOTI5MjgsImV4cCI6MjA3Mjg2ODkyOH0.voMMeOVxBNkLL0ehqyD1as9He2_nykm8rUGthtvTgyQ"
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+  const SUPABASE_URL = "https://ednokgrknummhlcdunzl.supabase.co"
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkbm9rZ3JrbnVtbWhsY2R1bnpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyOTI5MjgsImV4cCI6MjA3Mjg2ODkyOH0.voMMeOVxBNkLL0ehqyD1as9He2_nykm8rUGthtvTgyQ"
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-    // Elements
-    const writerBtn = document.getElementById('writerBtn');
-    const displayBtn = document.getElementById('displayBtn');
-    const writerView = document.getElementById('writerView');
-    const displayView = document.getElementById('displayView');
+  const writerBtn = document.getElementById('writerBtn');
+  const displayBtn = document.getElementById('displayBtn');
+  const writerView = document.getElementById('writerView');
+  const displayView = document.getElementById('displayView');
 
-    const roomInput = document.getElementById('roomInput');
-    const saveRoomBtn = document.getElementById('saveRoomBtn');
+  const roomInput = document.getElementById('roomInput');
+  const saveRoomBtn = document.getElementById('saveRoomBtn');
 
-    const subjectEl = document.getElementById('subject');
-    const textEl = document.getElementById('text');
-    const dueEl = document.getElementById('due');
-    const addBtn = document.getElementById('addBtn');
-    const quickAddSample = document.getElementById('quickAddSample');
+  const subjectEl = document.getElementById('subject');
+  const textEl = document.getElementById('text');
+  const dueEl = document.getElementById('due');
+  const addBtn = document.getElementById('addBtn');
+  const quickAddSample = document.getElementById('quickAddSample');
 
-    const bulk = document.getElementById('bulk');
-    const bulkSubject = document.getElementById('bulkSubject');
-    const bulkAddBtn = document.getElementById('bulkAddBtn');
+  const bulk = document.getElementById('bulk');
+  const bulkSubject = document.getElementById('bulkSubject');
+  const bulkAddBtn = document.getElementById('bulkAddBtn');
 
-    const writerList = document.getElementById('writerList');
-    const displayList = document.getElementById('displayList');
-    const doneList = document.getElementById('doneList');
-    const clearDoneBtn = document.getElementById('clearDoneBtn');
+  const writerList = document.getElementById('writerList');
+  const displayList = document.getElementById('displayList');
+  const doneList = document.getElementById('doneList');
+  const clearDoneBtn = document.getElementById('clearDoneBtn');
 
-    let ROOM = localStorage.getItem('roomCode') || 'ved-home';
-    roomInput.value = ROOM;
+  let ROOM = localStorage.getItem('roomCode') || 'ved-home';
+  roomInput.value = ROOM;
 
-    function setMode(mode) {
-      const isWriter = mode === 'writer';
-      writerView.classList.toggle('hidden', !isWriter);
-      displayView.classList.toggle('hidden', isWriter);
-      writerBtn.classList.toggle('bg-white', isWriter);
-      displayBtn.classList.toggle('bg-white', !isWriter);
-      const url = new URL(window.location);
-      url.searchParams.set('view', mode);
-      window.history.replaceState({}, '', url);
-    }
+  function setMode(mode) {
+    const isWriter = mode === 'writer';
+    writerView.classList.toggle('hidden', !isWriter);
+    displayView.classList.toggle('hidden', isWriter);
+    writerBtn.classList.toggle('bg-white', isWriter);
+    displayBtn.classList.toggle('bg-white', !isWriter);
+    const url = new URL(window.location);
+    url.searchParams.set('view', mode);
+    window.history.replaceState({}, '', url);
+  }
 
-    const viewParam = new URLSearchParams(location.search).get('view');
-    setMode(viewParam === 'display' ? 'display' : 'writer');
+  const viewParam = new URLSearchParams(location.search).get('view');
+  setMode(viewParam === 'display' ? 'display' : 'writer');
 
-    writerBtn.onclick = () => setMode('writer');
-    displayBtn.onclick = () => setMode('display');
+  writerBtn.onclick = () => setMode('writer');
+  displayBtn.onclick = () => setMode('display');
 
-    saveRoomBtn.onclick = () => {
-      ROOM = (roomInput.value || '').trim() || 'default';
-      localStorage.setItem('roomCode', ROOM);
-      subscribeToRoom();
-      saveRoomBtn.textContent = '✓ Using';
-      setTimeout(() => (saveRoomBtn.textContent = 'Use'), 1200);
+  saveRoomBtn.onclick = () => {
+    ROOM = (roomInput.value || '').trim() || 'default';
+    localStorage.setItem('roomCode', ROOM);
+    subscribeToRoom();
+    saveRoomBtn.textContent = '✓ Using';
+    setTimeout(() => (saveRoomBtn.textContent = 'Use'), 1200);
+  };
+
+  function colorFor(subj) {
+    const map = {
+      Physics: 'from-rose-200 to-rose-100 border-rose-300',
+      Math: 'from-sky-200 to-sky-100 border-sky-300',
+      Chemistry: 'from-lime-200 to-lime-100 border-lime-300',
+      Biology: 'from-emerald-200 to-emerald-100 border-emerald-300',
+      English: 'from-amber-200 to-amber-100 border-amber-300',
+      History: 'from-orange-200 to-orange-100 border-orange-300',
+      CS: 'from-violet-200 to-violet-100 border-violet-300',
+      Other: 'from-slate-200 to-slate-100 border-slate-300'
     };
+    return map[subj] || map.Other;
+  }
 
-    function colorFor(subj) {
-      const map = {
-        Physics: 'from-rose-200 to-rose-100 border-rose-300',
-        Math: 'from-sky-200 to-sky-100 border-sky-300',
-        Chemistry: 'from-lime-200 to-lime-100 border-lime-300',
-        Biology: 'from-emerald-200 to-emerald-100 border-emerald-300',
-        English: 'from-amber-200 to-amber-100 border-amber-300',
-        History: 'from-orange-200 to-orange-100 border-orange-300',
-        CS: 'from-violet-200 to-violet-100 border-violet-300',
-        Other: 'from-slate-200 to-slate-100 border-slate-300'
-      };
-      return map[subj] || map.Other;
-    }
+  function bubble({ id, subject, text, due, done }) {
+    const dueText = due ? new Date(due).toLocaleString() : '';
+    const card = document.createElement('div');
+    card.className = `pop rounded-2xl border bg-gradient-to-b ${colorFor(subject)} p-3 shadow`;
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <div class="text-xs uppercase tracking-wide font-semibold text-slate-700/80">${subject}</div>
+          <div class="font-medium break-words ${done ? 'line-through opacity-60' : ''}">${text}</div>
+          ${dueText ? `<div class="text-xs mt-1">Due: ${dueText}</div>` : ''}
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-act="toggle" class="px-2 py-1 rounded-lg bg-white/70 border">${done ? '↩︎' : '✓'}</button>
+          <button data-act="del" class="px-2 py-1 rounded-lg bg-white/70 border">🗑️</button>
+        </div>
+      </div>`;
 
-    function bubble({ id, subject, text, due, done }) {
-      const dueText = due ? new Date(due).toLocaleString() : '';
-      const card = document.createElement('div');
-      card.className = `pop rounded-2xl border bg-gradient-to-b ${colorFor(subject)} p-3 shadow`;
-      card.innerHTML = `
-        <div class="flex items-start justify-between gap-2">
-          <div class="min-w-0">
-            <div class="text-xs uppercase tracking-wide font-semibold text-slate-700/80">${subject}</div>
-            <div class="font-medium break-words ${done ? 'line-through opacity-60' : ''}">${text}</div>
-            ${dueText ? `<div class="text-xs mt-1">Due: ${dueText}</div>` : ''}
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <button data-act="toggle" class="px-2 py-1 rounded-lg bg-white/70 border">${done ? '↩︎' : '✓'}</button>
-            <button data-act="del" class="px-2 py-1 rounded-lg bg-white/70 border">🗑️</button>
-          </div>
-        </div>`;
-
-      card.querySelector('[data-act="toggle"]').onclick = async () => {
-        await supabase.from('homework').update({ done: !done }).eq('id', id)
+    // Toggle done immediately
+    card.querySelector('[data-act="toggle"]').onclick = async () => {
+      await supabase.from('homework').update({ done: !done }).eq('id', id)
+      done = !done;
+      const textDiv = card.querySelector('div.font-medium');
+      if (done) {
+        textDiv.classList.add('line-through', 'opacity-60');
+        doneList.appendChild(card);
+      } else {
+        textDiv.classList.remove('line-through', 'opacity-60');
+        displayList.appendChild(card);
       }
-      card.querySelector('[data-act="del"]').onclick = async () => {
-        await supabase.from('homework').delete().eq('id', id)
-      }
-      return card;
     }
 
-    async function renderLists() {
-      const { data } = await supabase.from('homework').select('*').eq('room', ROOM)
-      const items = data || []
-      const active = items.filter(i => !i.done)
-      const completed = items.filter(i => i.done)
-
-      writerList.innerHTML = '';
-      active.forEach(i => writerList.appendChild(bubble(i)));
-
-      displayList.innerHTML = '';
-      active.forEach(i => displayList.appendChild(bubble(i)));
-
-      doneList.innerHTML = '';
-      completed.forEach(i => doneList.appendChild(bubble(i)));
+    // Delete immediately
+    card.querySelector('[data-act="del"]').onclick = async () => {
+      await supabase.from('homework').delete().eq('id', id)
+      card.remove();
     }
 
-    async function subscribeToRoom() {
-      supabase.channel('room-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'homework', filter: `room=eq.${ROOM}` }, renderLists)
-        .subscribe()
-      renderLists()
+    return card;
+  }
+
+  async function renderLists() {
+    const { data } = await supabase.from('homework').select('*').eq('room', ROOM)
+    const items = data || []
+    const active = items.filter(i => !i.done)
+    const completed = items.filter(i => i.done)
+
+    writerList.innerHTML = '';
+    active.forEach(i => writerList.appendChild(bubble(i)));
+
+    displayList.innerHTML = '';
+    active.forEach(i => displayList.appendChild(bubble(i)));
+
+    doneList.innerHTML = '';
+    completed.forEach(i => doneList.appendChild(bubble(i)));
+  }
+
+  async function subscribeToRoom() {
+    supabase.channel('room-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'homework', filter: `room=eq.${ROOM}` }, renderLists)
+      .subscribe()
+    renderLists()
+  }
+
+  addBtn.onclick = async () => {
+    const subject = subjectEl.value.trim() || 'Other';
+    const text = textEl.value.trim();
+    const due = dueEl.value ? new Date(dueEl.value).toISOString() : null;
+    if (!text) return;
+    await supabase.from('homework').insert([{ subject, text, due, done: false, room: ROOM }])
+    textEl.value = '';
+    dueEl.value = '';
+  }
+
+  quickAddSample.onclick = async () => {
+    const samples = [
+      {subject:'Physics', text:'Finish p.132 #12–20, show work'},
+      {subject:'Math', text:'Worksheet 5B odd numbers'},
+      {subject:'English', text:'Outline intro paragraph; bring book'}
+    ];
+    for (const s of samples) await supabase.from('homework').insert([{ ...s, due: null, done:false, room: ROOM }])
+  }
+
+  bulkAddBtn.onclick = async () => {
+    const lines = bulk.value.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    const mode = bulkSubject.value;
+    for (const line of lines) {
+      let subject = 'Other', text = line;
+      if (mode === 'Auto-detect') {
+        const m = line.match(/^(\w+)[\s:—-]+(.+)/);
+        if (m) { subject = m[1]; text = m[2]; }
+      } else subject = mode;
+      await supabase.from('homework').insert([{ subject, text, due:null, done:false, room: ROOM }])
     }
+    bulk.value = '';
+  }
 
-    addBtn.onclick = async () => {
-      const subject = subjectEl.value.trim() || 'Other';
-      const text = textEl.value.trim();
-      const due = dueEl.value ? new Date(dueEl.value).toISOString() : null;
-      if (!text) return;
-      await supabase.from('homework').insert([{ subject, text, due, done: false, room: ROOM }])
-      textEl.value = '';
-      dueEl.value = '';
-    }
+  clearDoneBtn.onclick = async () => {
+    await supabase.from('homework').delete().eq('room', ROOM).eq('done', true)
+    doneList.innerHTML = ''; // clear immediately from UI
+  }
 
-    quickAddSample.onclick = async () => {
-      const samples = [
-        {subject:'Physics', text:'Finish p.132 #12–20, show work'},
-        {subject:'Math', text:'Worksheet 5B odd numbers'},
-        {subject:'English', text:'Outline intro paragraph; bring book'}
-      ];
-      for (const s of samples) await supabase.from('homework').insert([{ ...s, due: null, done:false, room: ROOM }])
-    }
+  subscribeToRoom()
 
-    bulkAddBtn.onclick = async () => {
-      const lines = bulk.value.split(/\n+/).map(l => l.trim()).filter(Boolean);
-      const mode = bulkSubject.value;
-      for (const line of lines) {
-        let subject = 'Other', text = line;
-        if (mode === 'Auto-detect') {
-          const m = line.match(/^(\w+)[\s:—-]+(.+)/);
-          if (m) { subject = m[1]; text = m[2]; }
-        } else subject = mode;
-        await supabase.from('homework').insert([{ subject, text, due:null, done:false, room: ROOM }])
-      }
-      bulk.value = '';
-    }
+  // 🔄 Refresh entire website every 1 minute
+  setInterval(async () => {
+    await renderLists()       // sync DB first
+    window.location.reload()  // then refresh page
+  }, 60000)
+</script>
 
-    clearDoneBtn.onclick = async () => {
-      await supabase.from('homework').delete().eq('room', ROOM).eq('done', true)
-    }
-
-    subscribeToRoom()
-
-    setInterval(() => {
-      window.location.reload()
-    }, 60000)
-  </script>
 </body>
 </html>
